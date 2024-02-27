@@ -7,11 +7,21 @@ GREEN = "#9bdeac"
 YELLOW = "#f7f5dd"
 FONT_NAME = "Courier"
 WORK_MIN = 1
-SHORT_BREAK_MIN = 5
+SHORT_BREAK_MIN = 1
 LONG_BREAK_MIN = 20
 reps = 0
+timer = None
 
-# ---------------------------- TIMER RESET ------------------------------- # 
+
+# ---------------------------- TIMER RESET ------------------------------- #
+def reset_timer():
+    global reps
+    window.after_cancel(timer)
+    label.config(text="TIMER", fg=GREEN, font=(FONT_NAME, 35, "bold"))
+    checkmark.config(text="")
+    canvas.itemconfig(timer_text, text="00:00")
+    reps = 0
+
 
 # ---------------------------- TIMER MECHANISM ------------------------------- #
 def start_timer():
@@ -37,14 +47,25 @@ def start_timer():
 def count_down(count):
     count_min = math.floor(count / 60)
     count_sec = count % 60
+
     if count_sec < 10:
         count_sec = f"0{count_sec}"
 
     canvas.itemconfig(timer_text, text=f"{count_min}:{count_sec}")
+
     if count > 0:
-        window.after(1000, count_down, count - 1)
+        global timer
+        timer = window.after(1000, count_down, count - 1)
     else:
         start_timer()
+        checkmark_group = ""
+        work_sessions = math.floor(reps/2)
+
+        for _ in range(work_sessions):
+            checkmark_group += "✔"
+
+        checkmark.config(text=checkmark_group)
+
 
 # ---------------------------- UI SETUP ------------------------------- #
 window = Tk()
@@ -61,14 +82,14 @@ canvas.grid(column=1, row=1)
 label = Label(text="TIMER", fg=GREEN, bg=YELLOW, font=(FONT_NAME, 30, "bold"))
 label.grid(column=1, row=0)
 
-checkmark = Label(text="✔", bg=YELLOW, fg=GREEN)
+checkmark = Label(bg=YELLOW, fg=GREEN)
 checkmark.grid(column=1, row=3)
 
 start_button = Button(text="Start", bg="white", highlightthickness=0, command=start_timer)
 start_button.grid(row=2, column=0)
-reset_button = Button(text="Reset", bg="white", highlightthickness=0)
-reset_button.grid(row=2, column=2)
 
+reset_button = Button(text="Reset", bg="white", highlightthickness=0, command=reset_timer)
+reset_button.grid(row=2, column=2)
 
 
 window.mainloop()
